@@ -61,10 +61,12 @@ public class LabelData {
             while (j < nonzero_m)
             {
                 x[j] = new svm_node();
-                while (features[k++] == 0.0);
+                while (features[k] == 0.0) {
+                    k++;
+                }
                 x[j].index = k;
                 x[j].value = features[k];
-                j++;
+                j++; k++;
             }
             if(nonzero_m>0) max_index = Math.max(max_index, x[nonzero_m-1].index);
             vx.addElement(x);

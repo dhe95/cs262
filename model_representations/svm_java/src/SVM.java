@@ -26,7 +26,6 @@ public class SVM {
         svm.svm_predict(model, testData.x.elementAt(0));
     }
 
-
     private static svm_model generateModelFromFile(String file) throws IOException {
         svm_parameter param = new svm_parameter();
         param.svm_type = svm_parameter.C_SVC;

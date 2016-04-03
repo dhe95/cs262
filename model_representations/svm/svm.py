@@ -30,7 +30,7 @@ class SVM:
         start = np.zeros(nr_class, dtype=np.int32)
         start[0] = 0
         for i in range(1, nr_class):
-            start[i] + start[i-1] + self.nSV[i-1]
+            start[i] = start[i-1] + self.nSV[i-1]
 
         vote = np.zeros(nr_class, dtype=np.int32)
 
