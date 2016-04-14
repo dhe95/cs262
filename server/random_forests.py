@@ -38,30 +38,23 @@ class Tree():
                 node = self.right[node]
         return max([i for i in range(self.n_classes)], key=lambda x: self.value[node][0][x])
 
-
-def generate_model(training):
-    d = np.loadtxt(open(training ,"rb"),delimiter=",")
-    x = np.delete(d, 0, 1)
-    y = d[:,0]
-
-    model = RandomForestClassifier()
-    model.fit(x, y)
-    return model
-
 if __name__ == "__main__":
-    d = np.loadtxt(open("data/spam-dataset/data-test.csv", "rb"),delimiter=",")
-    test_x = np.delete(d, 0, 1)
-    test_y = d[:,0]
-    pymodel = get_spam_random_forest()
-    s = pickle.dumps(pymodel)
-    f = open("digits_forest.pkl", "w")
-    f.write(s)
-    model = RandomForest(pymodel)
-    pyaccuracy = 0.0
-    modelaccuracy = 0.0
-    for i, x in enumerate(test_x):
-        if pymodel.predict(x) == test_y[i]:
-            pyaccuracy += 1.0 / len(test_y)
-        if model.predict(x) == test_y[i]:
-            modelaccuracy += 1.0 / len(test_y)
-    print pyaccuracy, modelaccuracy
+    training = "data/digit/train-images.csv"
+    training_labels = "data/digit/train-labels.csv"
+    test = "data/digit/test-images.csv"
+    test_labels = "data/digit/test-labels.csv"
+    train_x = np.loadtxt(open(training,"rb"),delimiter=",")
+    train_y = np.loadtxt(open(training_labels, "rb"), delimiter=",")
+    test_x = np.loadtxt(open(test,"rb"),delimiter=",")
+    test_y = np.loadtxt(open(test_labels, "rb"), delimiter=",")
+
+    num_trees = [10, 50, 100, 200, 300, 500, 800, 1000]
+    scores = []
+    for n in num_trees:
+        model = RandomForestClassifier(n_estimators=n).fit(train_x, train_y)
+        scores.append(model.score(test_x, test_y))
+        s = pickle.dumps(model)
+        f = open("digits_forest_" + str(n) + "trees.pkl", "w")
+        f.write(s)
+
+    print scores

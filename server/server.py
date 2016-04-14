@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify
 import pickle
 
-SVM_TRAINING_FILE = "data/digit-dataset/data-training.csv"
-RANDOM_FOREST_TRAINING_FILE = "data/digit-dataset/data-training.csv"
 SVM_MODEL_FILE = "digits_svm.pkl"
 RANDOM_FOREST_MODEL_FILE = "digits_forest.pkl"
 
@@ -17,13 +15,13 @@ def load_model_from_file(file_path):
 @app.route("/svm_predict", methods=['POST'])
 def svm_predict():
     content = request.get_json()
-    result = { "result": svm.predict(content['x'])[0] }
+    result = {"result": svm.predict(content['x'])[0]}
     return jsonify(result)
 
 @app.route("/random_forest_predict", methods=['POST'])
 def random_forest_predict():
     content = request.get_json()
-    result = { "result": random_forest.predict(content['x'])[0] }
+    result = {"result": random_forest.predict(content['x'])[0]}
     return jsonify(result)
 
 if __name__ == "__main__":
