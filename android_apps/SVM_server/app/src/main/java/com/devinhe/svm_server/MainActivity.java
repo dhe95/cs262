@@ -1,93 +1,132 @@
 package com.devinhe.svm_server;
 
-import android.os.Bundle;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.os.Bundle;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
+    private static final String TAG = MainActivity.class.getCanonicalName();
+    private static final String processId = Integer.toString(android.os.Process.myPid());
+    private static final String serverIP = "52.38.202.70";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        Button start = (Button) findViewById(R.id.start);
+        assert start != null;
+        start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                clearLogCat();
+                Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
+                MODEL modelType = MODEL.SVM;
+                String logLocation = Environment.getExternalStorageDirectory() + "/log.log";
+                float initBattery = getBatteryLevel();
+                int n_data = 10000;
+                logger.info("Benchmark's PID is {}", processId);
+                logger.info("Writing log to: {}", logLocation);
+                logger.info("Running {} connecting to server with {} data points", modelType.name(), n_data);
+                logger.info("========================== Starting Benchmark ==========================");
+                logger.info("Initial battery level: {}", Float.toString(initBattery));
+                int n_lines = 0;
+                try {
+                    File input = new File(Environment.getExternalStorageDirectory() + "/digits/test-images.csv");
+                    BufferedReader br = new BufferedReader(new FileReader(input));
+                    while (n_lines < n_data) {
+                        for (String line; (line = br.readLine()) != null; ) {
+                            // whatever lol
+                            logger.info("Making request {}", n_lines);
+                            try {
+                                String response = new PostSender().execute(new PostSenderParams(modelType, line, serverIP, n_lines)).get();
+                                logger.info("Received response {}", response);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            n_lines++;
+                            break;
+                        }
+                        br = new BufferedReader(new FileReader(input));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                TextView main = (TextView) findViewById(R.id.out);
+                assert main != null;
+                main.setText(n_lines + " lines read");
+                Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
+                float finalBattery = getBatteryLevel();
+                logger.info("Final battery level: {}", Float.toString(finalBattery));
+                logger.info("Battery used: {}", Float.toString(initBattery - finalBattery));
+                dumpLogCatToFile(logLocation);
             }
         });
-        Button start = (Button) findViewById(R.id.start_button);
-        if (start != null) {
-            start.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
-                    File output = new File(Environment.getExternalStorageDirectory() + "/log.log");
-                    try {
-                        FileWriter writer = new FileWriter(output);
-                        writer.write("Hello World");
-                        writer.flush();
-                    } catch(IOException e) {
-                        e.printStackTrace();
-                    }
-                    File input = new File(Environment.getExternalStorageDirectory() + "/digits/test-images.csv");
-                    int n_lines = 0;
-                    try(BufferedReader br = new BufferedReader(new FileReader(input))) {
-                        for(String line; (line = br.readLine()) != null;) {
-                            // whatever lol
-                            n_lines++;
-                        }
-                        TextView main = (TextView) findViewById(R.id.output);
-                        main.setText(n_lines + " lines read");
-                    } catch(IOException e) {
-                        e.printStackTrace();
-                    }
-                    Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
-                }
-            });
+    }
+
+    private float getBatteryLevel() {
+        Intent batteryIntent = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        return ((float)level)/(float)scale;
+    }
+
+    private static void clearLogCat() {
+        try {
+            Runtime.getRuntime().exec("logcat -c");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    private static void dumpLogCatToFile(String file) {
+        try {
+            File logFile = new File(file);
+            String cmd = "logcat -d -v threadtime -f " + logFile.getAbsolutePath();
+            Runtime.getRuntime().exec(cmd);
+        } catch(IOException e) {
+            e.printStackTrace();
         }
-
-        return super.onOptionsItemSelected(item);
     }
+
+    public enum MODEL {
+        SVM, FOREST, COLLAB_FILTER
+    }
+
+    public static String getPath(MODEL modelType) {
+        switch (modelType) {
+            case SVM:
+                return "/svm_predict";
+            case FOREST:
+                return "/random_forest_predict";
+            default:
+                return "/";
+        }
+    }
+
 }
