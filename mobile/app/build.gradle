@@ -17,6 +17,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    sourceSets {
+        main.java.srcDirs += '../../model_representations/svm_java'
+
+    }
 }
 
 dependencies {
@@ -24,4 +29,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.android.support:design:23.3.0'
+    compile 'tw.edu.ntu.csie:libsvm:3.1'
 }

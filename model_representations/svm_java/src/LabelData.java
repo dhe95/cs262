@@ -1,4 +1,6 @@
-import libsvm.svm_node;
+package src;
+
+import src.libsvm.svm_node;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -36,6 +38,10 @@ public class LabelData {
 
     public static LabelData loadLabelAndData(String file) throws IOException, FileNotFoundException {
         BufferedReader fp = new BufferedReader(new FileReader(file));
+        return loadLabelAndData(fp);
+    }
+
+    public static LabelData loadLabelAndData(BufferedReader fp) throws IOException, FileNotFoundException {
         Vector<Double> vy = new Vector<Double>();
         Vector<svm_node[]> vx = new Vector<svm_node[]>();
         int max_index = 0;
@@ -73,5 +79,4 @@ public class LabelData {
         }
         return new LabelData(vy, vx);
     }
-
 }
