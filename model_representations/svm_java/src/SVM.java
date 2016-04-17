@@ -1,9 +1,9 @@
 /**
  * Created by devinhe on 3/31/16.
  */
+package src;
 
-import libsvm.*;
-
+import src.libsvm.*;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -16,6 +16,7 @@ public class SVM {
     public static void main(String[] args) throws IOException {
         svm_model model;
         try {
+
             model = svm.svm_load_model(model_loc);
         } catch (Exception e) {
             System.err.println("Unable to load model from file, generating from scratch");
