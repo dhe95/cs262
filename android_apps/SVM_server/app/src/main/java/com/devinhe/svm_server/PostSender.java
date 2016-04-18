@@ -2,6 +2,8 @@ package com.devinhe.svm_server;
 
 import android.os.AsyncTask;
 
+import com.devinhe.svm_server.models.ModelType;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -29,9 +31,9 @@ public class PostSender extends AsyncTask<PostSenderParams, Void, String> {
         String serverIP = params[0].serverIP;
         String features = params[0].features;
         int n = params[0].n;
-        MainActivity.MODEL modelType = params[0].modelType;
+        ModelType modelType = params[0].modelType;
         try {
-            URL url = new URL("http", serverIP, MainActivity.getPath(modelType));
+            URL url = new URL("http", serverIP, ModelType.getPath(modelType));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(15000);
             conn.setConnectTimeout(15000);
