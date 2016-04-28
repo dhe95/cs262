@@ -25,8 +25,8 @@ object CollaborativeFiltering {
 
     println("Training: " + numTraining + ", validation: " + numValidation)
 
-//    val ranks = List(10, 20, 30, 50, 70, 100, 150, 200)
-    val ranks = List(500, 800, 1000, 1500, 2000)
+    val ranks = List(10, 20, 30, 50, 70, 100, 150, 200)
+//    val ranks = List(500, 800, 1000, 1500, 2000)
     var RMSEs: List[Double] = List()
 //    val numIterations = 10
     val numIterations = 20

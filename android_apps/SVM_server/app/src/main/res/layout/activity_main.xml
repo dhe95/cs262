@@ -20,16 +20,17 @@
         android:layout_height="wrap_content"
         android:text="SVM"
         android:id="@+id/svm"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/ipAddr"
         android:layout_toLeftOf="@+id/random_forest"
-        android:layout_toStartOf="@+id/random_forest" />
+        android:layout_toStartOf="@+id/random_forest"
+        android:layout_marginTop="46dp" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Forest"
         android:id="@+id/random_forest"
-        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@+id/svm"
         android:layout_centerHorizontal="true" />
 
     <Button
@@ -37,7 +38,7 @@
         android:layout_height="wrap_content"
         android:text="Collab Filter"
         android:id="@+id/collab_filter"
-        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@+id/random_forest"
         android:layout_toRightOf="@+id/random_forest"
         android:layout_toEndOf="@+id/random_forest" />
 
@@ -83,5 +84,43 @@
         android:layout_alignTop="@+id/ipAddr"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SVM"
+        android:id="@+id/svm_local"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/svm"
+        android:layout_alignStart="@+id/svm" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Local Benchmarks"
+        android:id="@+id/textView3"
+        android:layout_below="@+id/svm"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="46dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Forest"
+        android:id="@+id/forest_local"
+        android:layout_alignBottom="@+id/svm_local"
+        android:layout_alignLeft="@+id/random_forest"
+        android:layout_alignStart="@+id/random_forest" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Collab Filter"
+        android:id="@+id/collab_filter_local"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/forest_local"
+        android:layout_toEndOf="@+id/forest_local" />
 
 </RelativeLayout>

@@ -51,10 +51,35 @@ if __name__ == "__main__":
     num_trees = [10, 50, 100, 200, 300, 500, 800, 1000]
     scores = []
     for n in num_trees:
-        model = RandomForestClassifier(n_estimators=n).fit(train_x, train_y)
-        scores.append(model.score(test_x, test_y))
-        s = pickle.dumps(model)
-        f = open("digits_forest_" + str(n) + "trees.pkl", "w")
+        model = RandomForest(RandomForestClassifier(n_estimators=n).fit(train_x, train_y))
+        # scores.append(model.score(test_x, test_y))
+        # s = pickle.dumps(model)
+        # f = open("digits_forest_" + str(n) + "trees.pkl", "w")
+        # f.write(s)
+        s = str(n) + "\n"
+        s += str(model.classes) + "\n"
+        for tree in model.trees:
+            s += str(tree.n_classes) + ";"
+            for item in tree.left:
+                s += str(int(item)) + ","
+            s += ";"
+            for item in tree.right:
+                s += str(int(item)) + ","
+            s += ";"
+            for item in tree.feature:
+                s += str(int(item)) + ","
+            s += ";"
+            for item in tree.threshold:
+                s += str(float(item)) + ","
+            s += ";"
+            assert tree.value.shape[1] == 1
+            for item in tree.value:
+                for val in item[0]:
+                    s += str(int(val)) + ","
+                s += "."
+            s += ";"
+            s += "\n"
+        f = open("java_digits_forest_" + str(n) + "trees", "w")
         f.write(s)
 
     print scores
