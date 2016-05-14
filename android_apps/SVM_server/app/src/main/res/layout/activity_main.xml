@@ -123,4 +123,15 @@
         android:layout_toRightOf="@+id/forest_local"
         android:layout_toEndOf="@+id/forest_local" />
 
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberSigned"
+        android:ems="10"
+        android:id="@+id/model_size"
+        android:layout_alignTop="@+id/textView3"
+        android:layout_toRightOf="@+id/textView3"
+        android:layout_toEndOf="@+id/textView3"
+        android:autoText="true" />
+
 </RelativeLayout>

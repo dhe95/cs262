@@ -28,13 +28,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
+    private static final Logger logger = LoggerFactory.getLogger(BenchmarkUtils.class);
     private static final String TAG = MainActivity.class.getCanonicalName();
     private String logLocation;
     private float initBattery;
@@ -57,10 +57,24 @@ public class MainActivity extends AppCompatActivity {
                 if (!validateTextBoxes()) return;
                 Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
                 startLog("/svm_server.log");
-                endLog();
+                String outloc = Environment.getExternalStorageDirectory() + "/out/svm_server";
+                float initBattery = getBatteryLevel();
 
                 DigitsServerModel svmBenchmark = new DigitsServerModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.SVM);
-                svmBenchmark.start();
+                String out = svmBenchmark.start();
+                endLog();
+                try {
+                    PrintWriter writer = new PrintWriter(outloc);
+                    writer.println(out);
+                    writer.print("Init Battery: ");
+                    writer.println(initBattery);
+                    writer.print("Final Battery: ");
+                    writer.println(getBatteryLevel());
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 TextView main = (TextView) findViewById(R.id.out);
                 assert main != null;
@@ -76,10 +90,24 @@ public class MainActivity extends AppCompatActivity {
                 if (!validateTextBoxes()) return;
                 Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
                 startLog("/forest_server.log");
+                float initBattery = getBatteryLevel();
+                String outloc = Environment.getExternalStorageDirectory() + "/out/forest_server";
 
                 DigitsServerModel benchmark = new DigitsServerModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.FOREST);
-                benchmark.start();
+                String out = benchmark.start();
                 endLog();
+                try {
+                    PrintWriter writer = new PrintWriter(outloc);
+                    writer.println(out);
+                    writer.print("Init Battery: ");
+                    writer.println(initBattery);
+                    writer.print("Final Battery: ");
+                    writer.println(getBatteryLevel());
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 TextView main = (TextView) findViewById(R.id.out);
                 assert main != null;
@@ -95,11 +123,25 @@ public class MainActivity extends AppCompatActivity {
                 if (!validateTextBoxes()) return;
                 Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
                 startLog("/collab_server.log");
+                float initBattery = getBatteryLevel();
+                String outloc = Environment.getExternalStorageDirectory() + "/out/collab_server";
 
                 RecommendationServerModel benchmark = new RecommendationServerModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.COLLAB_FILTER);
-                benchmark.start();
+                String out = benchmark.start();
 
                 endLog();
+                try {
+                    PrintWriter writer = new PrintWriter(outloc);
+                    writer.println(out);
+                    writer.print("Init Battery: ");
+                    writer.println(initBattery);
+                    writer.print("Final Battery: ");
+                    writer.println(getBatteryLevel());
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 TextView main = (TextView) findViewById(R.id.out);
                 assert main != null;
@@ -114,18 +156,35 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (!validateNumData()) return;
                 Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
+                String out = "";
                 startLog("/SVM_local.log");
+                float initBattery = getBatteryLevel();
+                String outloc = Environment.getExternalStorageDirectory() + "/out/svm_local";
+                try {
+                    File input = new File(Environment.getExternalStorageDirectory() + "/resources/data_test.csv");
+                    BufferedReader data_br = new BufferedReader(new FileReader(input));
+                    File input2 = new File(Environment.getExternalStorageDirectory() + "/resources/javalibsvm_digits.bin");
+                    BufferedReader model_br = new BufferedReader(new FileReader(input2));
 
-                InputStream data_is = getResources().openRawResource(R.raw.data_test);
-                BufferedReader data_br = new BufferedReader(new InputStreamReader(data_is));
-
-                InputStream model_is = getResources().openRawResource(R.raw.javalibsvm_digits);
-                BufferedReader model_br = new BufferedReader(new InputStreamReader(model_is));
-
-                SVMLocalModel benchmark = new SVMLocalModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.SVM);
-                benchmark.start(data_br, model_br);
+                    SVMLocalModel benchmark = new SVMLocalModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.SVM);
+                    out = benchmark.start(data_br, model_br);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 endLog();
+                try {
+                    PrintWriter writer = new PrintWriter(outloc);
+                    writer.println(out);
+                    writer.print("Init Battery: ");
+                    writer.println(initBattery);
+                    writer.print("Final Battery: ");
+                    writer.println(getBatteryLevel());
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 TextView main = (TextView) findViewById(R.id.out);
                 assert main != null;
                 main.setText("SVM local done");
@@ -138,20 +197,39 @@ public class MainActivity extends AppCompatActivity {
         localForest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                EditText sizeText = (EditText) findViewById(R.id.model_size);
+                String size = sizeText.getText().toString();
                 if (!validateNumData()) return;
                 Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
-                startLog("/forest_local_300.log");
+                startLog("/forest_local_" + size + ".log");
+                float initBattery = getBatteryLevel();
+                String out = "";
+                String outloc = Environment.getExternalStorageDirectory() + "/out/forest_local_" + size;
+                try {
+                    File input = new File(Environment.getExternalStorageDirectory() + "/resources/data_test.csv");
+                    BufferedReader data_br = new BufferedReader(new FileReader(input));
+                    File input2 = new File(Environment.getExternalStorageDirectory() + "/resources/java_digits_forest_"+  size + "trees");
+                    BufferedReader model_br = new BufferedReader(new FileReader(input2));
 
-                InputStream data_is = getResources().openRawResource(R.raw.data_test);
-                BufferedReader data_br = new BufferedReader(new InputStreamReader(data_is));
-
-                InputStream model_is = getResources().openRawResource(R.raw.java_digits_forest_300trees);
-                BufferedReader model_br = new BufferedReader(new InputStreamReader(model_is));
-
-                RandomForestsLocalModel benchmark = new RandomForestsLocalModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.FOREST);
-                benchmark.start(data_br, model_br);
+                    RandomForestsLocalModel benchmark = new RandomForestsLocalModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.FOREST, outloc);
+                    out = benchmark.start(data_br, model_br);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 endLog();
+                try {
+                    PrintWriter writer = new PrintWriter(outloc);
+                    writer.println(out);
+                    writer.print("Init Battery: ");
+                    writer.println(initBattery);
+                    writer.print("Final Battery: ");
+                    writer.println(getBatteryLevel());
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 TextView main = (TextView) findViewById(R.id.out);
                 assert main != null;
                 main.setText("Forest local done");
@@ -165,14 +243,37 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (!validateNumData()) return;
                 Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
-                startLog("/collab_filter_local.log");
+                EditText sizeText = (EditText) findViewById(R.id.model_size);
+                String size = sizeText.getText().toString();
+                startLog("/collab_filter_local_" + size + ".log");
+                float initBattery = getBatteryLevel();
+                String outloc = Environment.getExternalStorageDirectory() + "/out/collab_local_" + size;
+                String out = "";
+                try {
+                    File input = new File(Environment.getExternalStorageDirectory() + "/resources/user_" + size);
+                    BufferedReader user = new BufferedReader(new FileReader(input));
+                    File input2 = new File(Environment.getExternalStorageDirectory() + "/resources/product_" + size);
+                    BufferedReader product = new BufferedReader(new FileReader(input2));
 
-                InputStream user = getResources().openRawResource(R.raw.user_10);
-                InputStream product = getResources().openRawResource(R.raw.product_10);
-                CollabFilterLocalModel benchmark = new CollabFilterLocalModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.SVM, 10);
-                benchmark.start(user, product);
+                    CollabFilterLocalModel benchmark = new CollabFilterLocalModel(BenchmarkUtils.NUM_DATA_POINTS, ModelType.COLLAB_FILTER, Integer.parseInt(size));
+                    out = benchmark.start(user, product);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 endLog();
+                try {
+                    PrintWriter writer = new PrintWriter(outloc);
+                    writer.println(out);
+                    writer.print("Init Battery: ");
+                    writer.println(initBattery);
+                    writer.print("Final Battery: ");
+                    writer.println(getBatteryLevel());
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 TextView main = (TextView) findViewById(R.id.out);
                 assert main != null;
                 main.setText("collab local done");
@@ -185,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startLog(String loc) {
+        BenchmarkUtils.clearLogCat();
         logLocation = Environment.getExternalStorageDirectory() + loc;
         initBattery = getBatteryLevel();
         logger.info("Writing log to: {}", logLocation);
